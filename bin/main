@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require './lib/logic.rb'
+
+class TicTacInterface
+  def initialize
+    players = [0, 0]
+    begin
+      puts `clear`
+      p "What's your name, player 1?"
+      players[0] = gets.chomp
+      puts `clear`
+      p "What's your name, player 2?"
+      players[1] = gets.chomp
+      puts `clear`
+    rescue StandardError => e
+      p "No name given #{e}"
+      sleep 1
+      retry
+    end
+    @engine = TicTacLogic.new(players[0], players[1])
+  end
+
+  def game
+    paint
+    while @engine.play
+      p "Please #{@engine.current_player}, make a move"
+      until @engine.move(gets.chomp.to_i)
+        p "Please, #{@engine.current_player}, type the number of an avaiable spot."
+      end
+      paint
+      @win = @engine.game_end?
+    end
+    ending(@win)
+  end
+
+  private
+
+  def paint
+    puts `clear`
+    p '||||||||||||||||||||||'
+    3.times do |x|
+      p "        #{@engine.board[(3 * x)]} #{@engine.board[(3 * x) + 1]} #{@engine.board[(3 * x) + 2]}"
+    end
+    p '||||||||||||||||||||||'
+  end
+
+  def ending(win)
+    p "It's a tie!" unless win
+    p "Winner is #{@engine.current_player}!" if win
+    begin
+      p 'Play Again? (y/n)'
+      play_again = gets.chomp
+    rescue => exception
+      p 'Fatal Error!!'
+    end
+    if play_again.to_sym == :y
+      @engine.play_again
+      return game
+    elsif play_again.to_sym == :n
+      return p "Goodbye!"      
+    end
+    p "Not a valid option. Goodbye!"
+  end
+end
+
+main = TicTacInterface.new
+main.game
